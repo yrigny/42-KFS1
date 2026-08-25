@@ -1,36 +1,55 @@
-CC = gcc
-ASM = nasm
-LD = ld
-CFLAGS = -m32 -Wall -Wextra -Werror -fno-builtin -fno-exceptions -fno-stack-protector -nostdlib -nodefaultlibs
-ASMFLAGS = -f elf32
-LDFLAGS = -m elf_i386 -T linker.ld
+NAME		= kernel.bin
+ISO			= kfs1.iso
 
-KERNEL = kernel.bin
-ISO = kernel.iso
+CC			= gcc
+ASM			= nasm
+LD			= ld
 
-all:  $(KERNEL)
+CFLAGS		= -m32 -Wall -Wextra -Werror \
+				-fno-builtin -fno-exceptions -fno-stack-protector -nostdlib -nodefaultlibs
+ASMFLAGS	= -f elf32
+LDFLAGS 	= -m elf_i386 -T linker.ld
 
-$(KERNEL): boot.o kernel.o
-	$(LD) $(LDFLAGS) -o $@ $^
+SRC_ASM		= boot/boot.asm
+SRC_C		= src/kernel.c
+OBJ			= boot.o kernel.o
 
-$(ISO): $(KERNEL)
-	mkdir -p isodir/boot/grub
-	cp kernel.bin isodir/boot/kernel.bin
-	cat > isodir/boot/grub/grub.cfg << 'EOF'
-	menuentry "KFS-1" {
-		multiboot /boot/kernel.bin
-	}
-	EOF
-	grub-mkrescue --compress=xz -o $(ISO) isodir
+all: $(NAME)
 
-boot.o: boot/boot.asm
+$(NAME): $(OBJ) linker.ld
+	$(LD) $(LDFLAGS) -o $(NAME) $(OBJ)
+
+boot.o: $(SRC_ASM)
 	$(ASM) $(ASMFLAGS) -o $@ $<
 
-kernel.o: src/kernel.c
+kernel.o: $(SRC_C)
 	$(CC) $(CFLAGS) -c -o $@ $<
 
-clean:
-	rm -f *.o $(KERNEL) $(ISO)
-	@-rm -rf isodir
+iso: $(NAME)
+	mkdir -p isodir/boot/grub
+	cp $(NAME) isodir/boot/$(NAME)
+	printf 'set timeout=0\nset default=0\nmenuentry "KFS-1" {\n\tmultiboot /boot/$(NAME)\n}\n' \
+		> isodir/boot/grub/grub.cfg
+	podman run --rm \
+		-v $(PWD)/isodir:/isodir:ro \
+		-v $(PWD):/output \
+		docker.io/library/debian:bookworm-slim \
+		bash -c "apt-get update && apt-get install -y grub-pc-bin xorriso 2>/dev/null | tail -3 && \
+				grub-mkrescue -d /usr/lib/grub/i386-pc -o /output/$(ISO) /isodir"
 
-re: clean all
+run: $(NAME)
+	qemu-system-i386 -kernel $(NAME)
+
+run-iso: iso
+	qemu-system-i386 -cdrom $(ISO)
+
+clean:
+	rm -f $(OBJ)
+
+fclean: clean
+	rm -f $(NAME) $(ISO)
+	rm -rf isodir
+
+re: fclean all
+
+.PHONY: all clean fclean re run run-iso iso
