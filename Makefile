@@ -5,25 +5,27 @@ CC			= gcc
 ASM			= nasm
 LD			= ld
 
-CFLAGS		= -m32 -Wall -Wextra -Werror \
+CFLAGS		= -m32 -Wall -Wextra -Werror -Iinclude \
 				-fno-builtin -fno-exceptions -fno-stack-protector -nostdlib -nodefaultlibs
 ASMFLAGS	= -f elf32
 LDFLAGS 	= -m elf_i386 -T linker.ld
 
 SRC_ASM		= boot/boot.asm
-SRC_C		= src/kernel.c
-OBJ			= boot.o kernel.o
+SRC_C		= src/kernel.c \
+				src/vga.c \
+				src/string.c
+OBJ			= $(SRC_ASM:.asm=.o) $(SRC_C:.c=.o)
 
 all: $(NAME)
 
 $(NAME): $(OBJ) linker.ld
 	$(LD) $(LDFLAGS) -o $(NAME) $(OBJ)
 
-boot.o: $(SRC_ASM)
-	$(ASM) $(ASMFLAGS) -o $@ $<
-
-kernel.o: $(SRC_C)
+%.o: %.c
 	$(CC) $(CFLAGS) -c -o $@ $<
+
+%.o: %.asm
+	$(ASM) $(ASMFLAGS) -o $@ $<
 
 iso: $(NAME)
 	mkdir -p isodir/boot/grub
