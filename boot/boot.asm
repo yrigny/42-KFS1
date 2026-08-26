@@ -25,7 +25,7 @@ extern kernel_main
 _start:
     mov esp, stack_top          ; point to stack
     call kernel_main            ; call C code
-    cli                         ; clear interrupt flag?
+    cli                         ; clear interrupt
 .hang:
     hlt                         ; hang the CPU
     jmp .hang

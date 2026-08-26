@@ -1,0 +1,5 @@
+.vscode/
+*.o
+isodir/
+kernel.bin
+kfs1.iso
