@@ -13,7 +13,8 @@ LDFLAGS 	= -m elf_i386 -T linker.ld
 SRC_ASM		= boot/boot.asm
 SRC_C		= src/kernel.c \
 				src/vga.c \
-				src/string.c
+				src/string.c \
+				src/printf.c
 OBJ			= $(SRC_ASM:.asm=.o) $(SRC_C:.c=.o)
 
 all: $(NAME)
