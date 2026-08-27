@@ -1,5 +1,6 @@
 #include "vga.h"
 #include "libk.h"
+#include "keyboard.h"
 
 void kernel_main(void)
 {
@@ -33,6 +34,8 @@ void kernel_main(void)
 	kprintf("percent: 100%%\n");
 
 	while (1) {
-		__asm__ volatile ("hlt");
+		// __asm__ volatile ("hlt");
+		char c = keyboard_getc();
+		vga_putchar(c);
 	}
 }
