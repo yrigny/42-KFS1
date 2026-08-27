@@ -46,7 +46,8 @@ static uint16_t	vga_entry(char c, uint8_t color)
 static void	vga_scroll(void)
 {
 	uint16_t	*vga = VGA_MEMORY;
-	uint16_t	blank = vga_entry(' ', vga_color);
+	uint8_t		blank_color = vga_make_color(VGA_COLOR_WHITE, VGA_COLOR_BLACK);
+	uint16_t	blank = vga_entry(' ', blank_color);
 
 	// Use memmove to shift the contents of the VGA buffer up by one row
 	memmove(vga, vga + VGA_WIDTH, sizeof(uint16_t) * VGA_WIDTH * (VGA_HEIGHT - 1));
