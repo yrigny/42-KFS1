@@ -73,6 +73,18 @@ void	vga_set_color(vga_color_t fg, vga_color_t bg)
 	vga_color = vga_make_color(fg, bg);
 }
 
+/* Sets the color for the VGA buffer using a raw 8-bit color value */
+void	vga_set_color_raw(uint8_t color)
+{
+	vga_color = color;
+}
+
+/* Gets the current color for the VGA buffer */
+uint8_t	vga_get_color(void)
+{
+	return vga_color;
+}
+
 /* Initializes the VGA buffer */
 void	vga_init(void)
 {

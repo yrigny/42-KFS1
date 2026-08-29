@@ -76,3 +76,50 @@ void	kprintf(const char *fstr, ...)
 	kvprintf(fstr, ap);	// Call the function that handles the variable arguments
 	va_end(ap);			// Clean up the variable argument list
 }
+
+static uint8_t	level_to_color(const char **fstr)
+{
+	unsigned char	level = (unsigned char)(*fstr)[0];
+	uint8_t	color;
+
+	switch (level) {
+		case 0x01:	// KERN_EMERG
+			color = vga_make_color(VGA_COLOR_WHITE, VGA_COLOR_RED);
+			*fstr += 1;
+			break;
+		case 0x02:	// KERN_ERR
+			color = vga_make_color(VGA_COLOR_LIGHT_RED, VGA_COLOR_BLACK);
+			*fstr += 1;
+			break;
+		case 0x03:	// KERN_WARN
+			color = vga_make_color(VGA_COLOR_LIGHT_BROWN, VGA_COLOR_BLACK);
+			*fstr += 1;
+			break;
+		case 0x04:	// KERN_INFO
+			color = vga_make_color(VGA_COLOR_LIGHT_GREEN, VGA_COLOR_BLACK);
+			*fstr += 1;
+			break;
+		case 0x05:	// KERN_DEBUG
+			color = vga_make_color(VGA_COLOR_DARK_GREY, VGA_COLOR_BLACK);
+			*fstr += 1;
+			break;
+		default:
+			color = vga_make_color(VGA_COLOR_WHITE, VGA_COLOR_BLACK);
+	}
+	return color;
+}
+
+void	kprintk(const char *fstr, ...)
+{
+	uint8_t	saved_color = vga_get_color();	// Save the current VGA color
+	uint8_t	msg_color = level_to_color(&fstr);	// Determine the color based on the log level
+
+	vga_set_color(msg_color >> 4, msg_color & 0x0F);
+
+	va_list	ap;
+	va_start(ap, fstr);
+	kvprintf(fstr, ap);	// Call the function that handles the variable arguments
+	va_end(ap);
+
+	vga_set_color_raw(saved_color);	// Restore the original VGA color
+}

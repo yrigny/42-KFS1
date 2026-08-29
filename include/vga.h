@@ -24,6 +24,8 @@ typedef enum {
 
 uint8_t	vga_make_color(vga_color_t fg, vga_color_t bg);
 void	vga_set_color(vga_color_t fg, vga_color_t bg);
+void	vga_set_color_raw(uint8_t color);
+uint8_t	vga_get_color(void);
 void	vga_init(void);
 void	vga_clear(void);
 void	vga_putchar(char c);

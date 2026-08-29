@@ -21,7 +21,14 @@ void kernel_main(void)
 	vga_set_color(VGA_COLOR_WHITE, VGA_COLOR_BLACK);
 	vga_print("done.\n");
 
+    kprintk(KERN_DEBUG "VGA buffer at 0x%x\n", 0xB8000);
+    kprintk(KERN_WARN  "Low memory: %d KB remaining\n", 512);
+    kprintk(KERN_ERR   "Failed to load module: %s\n", "test.ko");
+    kprintk(KERN_EMERG "Kernel panic: unhandled fault at 0x%x\n", 0xdeadbeef);
+	kprintk(KERN_INFO  "System initialized successfully.\n");
+
 	// Test kprintf with various format specifiers
+	kprintf("\nBack to normal color after printk.\n");
 	kprintf("dec:  %d  neg: %d\n", 1234, -42);
 	kprintf("uint: %u\n", 4000000000u);
 	kprintf("hex:  %x\n", 0xdeadbeef);
@@ -32,10 +39,14 @@ void kernel_main(void)
 	kprintf("pointer: %p\n", (void*)0x12345678);
 	kprintf("null pointer: %p\n", (void*)0);
 	kprintf("percent: 100%%\n");
+	kprintf("\nType something:\n> ");
 
 	while (1) {
 		// __asm__ volatile ("hlt");
 		char c = keyboard_getc();
 		vga_putchar(c);
+		if (c == '\n') {
+			vga_print("> ");
+		}
 	}
 }
