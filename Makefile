@@ -40,6 +40,8 @@ iso: $(NAME)
 		docker.io/library/debian:bookworm-slim \
 		bash -c "apt-get update && apt-get install -y grub-pc-bin xorriso 2>/dev/null | tail -3 && \
 				grub-mkrescue -d /usr/lib/grub/i386-pc -o /output/$(ISO) /isodir"
+	@echo "Size of ISO: "
+	@ls -lh $(ISO)
 
 run: $(NAME)
 	qemu-system-i386 -kernel $(NAME)
